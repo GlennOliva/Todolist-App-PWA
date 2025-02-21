@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Navbar from "./Navbar";
 import Snackbar from "@mui/material/Snackbar";
@@ -25,7 +25,7 @@ const Todos = () => {
   // Fetch tasks on mount
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, );
 
   const fetchTasks = async () => {
     try {
