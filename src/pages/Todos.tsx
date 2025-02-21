@@ -19,10 +19,10 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
-const API_URL = "http://localhost:5000/tasks";
+const API_URL = "http://localhost:5000/tasks"; // JSON Server API URL
 
 const Todos = () => {
-  const [tasks, setTasks] = useState<{ _id: string; text: string }[]>([]);
+  const [tasks, setTasks] = useState<{ id: number; text: string }[]>([]);
   const [newTask, setNewTask] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editedTask, setEditedTask] = useState("");
@@ -32,11 +32,11 @@ const Todos = () => {
     message: "",
     severity: "success",
   });
-  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+  const [taskToDelete, setTaskToDelete] = useState<number | null>(null);
 
   useEffect(() => {
     fetchTasks();
-  }, );
+  }, []);
 
   const fetchTasks = async () => {
     try {
@@ -78,7 +78,7 @@ const Todos = () => {
     }
   };
 
-  const confirmDeleteTask = (id: string) => {
+  const confirmDeleteTask = (id: number) => {
     setTaskToDelete(id);
   };
 
@@ -90,7 +90,7 @@ const Todos = () => {
 
     try {
       await axios.delete(`${API_URL}/${taskToDelete}`);
-      setTasks(tasks.filter((task) => task._id !== taskToDelete));
+      setTasks(tasks.filter((task) => task.id !== taskToDelete));
       showSnackbar("Task removed successfully!", "success");
     } catch (error) {
       showSnackbar("Failed to delete task.", "error");
@@ -104,7 +104,7 @@ const Todos = () => {
     const taskToUpdate = tasks[index];
 
     try {
-      const response = await axios.put(`${API_URL}/${taskToUpdate._id}`, { text: editedTask });
+      const response = await axios.put(`${API_URL}/${taskToUpdate.id}`, { text: editedTask });
       setTasks(tasks.map((task, i) => (i === index ? response.data : task)));
       setEditingIndex(null);
       setEditedTask("");
@@ -163,7 +163,7 @@ const Todos = () => {
             ) : (
               <ul className="mt-4 space-y-2">
                 {tasks.map((task, index) => (
-                  <li key={task._id} className="flex justify-between items-center p-2 border rounded bg-gray-50">
+                  <li key={task.id} className="flex justify-between items-center p-2 border rounded bg-gray-50">
                     {editingIndex === index ? (
                       <Input
                         value={editedTask}
@@ -190,7 +190,7 @@ const Todos = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => confirmDeleteTask(task._id)}
+                            onClick={() => confirmDeleteTask(task.id)}
                           >
                             ✖
                           </Button>
