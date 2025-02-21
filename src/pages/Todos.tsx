@@ -7,6 +7,17 @@ import { Input } from "@/components/ui/input";
 import Navbar from "./Navbar";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert from "@mui/material/Alert";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 const API_URL = "http://localhost:5000/tasks";
 
@@ -21,8 +32,8 @@ const Todos = () => {
     message: "",
     severity: "success",
   });
+  const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
 
-  // Fetch tasks on mount
   useEffect(() => {
     fetchTasks();
   }, );
@@ -59,7 +70,7 @@ const Todos = () => {
 
     try {
       const response = await axios.post(API_URL, { text: newTask });
-      setTasks([...tasks, response.data]); // Optimistically update UI
+      setTasks([...tasks, response.data]);
       setNewTask("");
       showSnackbar("Task added successfully!", "success");
     } catch (error) {
@@ -67,18 +78,24 @@ const Todos = () => {
     }
   };
 
-  const removeTask = async (id: string) => {
-    if (!id) {
+  const confirmDeleteTask = (id: string) => {
+    setTaskToDelete(id);
+  };
+
+  const removeTask = async () => {
+    if (!taskToDelete) {
       showSnackbar("Invalid task ID.", "error");
       return;
     }
 
     try {
-      await axios.delete(`${API_URL}/${id}`);
-      setTasks(tasks.filter((task) => task._id !== id));
+      await axios.delete(`${API_URL}/${taskToDelete}`);
+      setTasks(tasks.filter((task) => task._id !== taskToDelete));
       showSnackbar("Task removed successfully!", "success");
     } catch (error) {
       showSnackbar("Failed to delete task.", "error");
+    } finally {
+      setTaskToDelete(null);
     }
   };
 
@@ -88,7 +105,7 @@ const Todos = () => {
 
     try {
       const response = await axios.put(`${API_URL}/${taskToUpdate._id}`, { text: editedTask });
-      setTasks(tasks.map((task, i) => (i === index ? response.data : task))); // Update UI after success
+      setTasks(tasks.map((task, i) => (i === index ? response.data : task)));
       setEditingIndex(null);
       setEditedTask("");
       showSnackbar("Task updated successfully!", "success");
@@ -96,12 +113,6 @@ const Todos = () => {
       showSnackbar("Failed to update task.", "error");
     }
   };
-
-  
-  
-  
-  
-  
 
   const startEditing = (index: number, taskText: string) => {
     setEditingIndex(index);
@@ -174,24 +185,35 @@ const Todos = () => {
                         </Button>
                       )}
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          console.log("Deleting task ID:", task._id);
-                          removeTask(task._id);
-                        }}
-                      >
-                        ✖
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => confirmDeleteTask(task._id)}
+                          >
+                            ✖
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the task.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={removeTask}>Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </li>
                 ))}
               </ul>
             )}
           </CardContent>
-
-          
         </Card>
       </section>
     </>
